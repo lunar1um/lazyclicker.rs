@@ -13,7 +13,7 @@ also i tested global keybinds on hyprland, so it varies for your wm / compositor
 - two modes: holding and clicking
 
 #### setting up!
-1. Head to [Releases](https://github.com/lunar1um/autoclicker.rs) and grab the latest Release!
+1. Head to [Releases](https://github.com/lunar1um/autoclicker.rs/releases) and grab the latest Release!
 2. Move the *binary file* (lazyclicker) to somewhere within your **PATH**
 3. Run `lazyclicker init` for the first time and it will create a sample configuration file (often at `~/.config/lazyclicker`)
 
