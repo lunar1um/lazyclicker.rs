@@ -1,6 +1,6 @@
 # lazyclicker.rs
 a *lazy* autoclicker for unix systems that support multiple profiles and holding!!  
-this is the second version of the autoclicker i made a while ago: [herehere](https://github.com/lunar1um/autoclicker)  
+this is the second version of the autoclicker i made a while ago: [herehere](https://github.com/lunar1um/auto-clicker)  
 
 #### expectations
 i have only tested on arch linux, no idea about other os, but they should work!!  
@@ -13,7 +13,7 @@ also i tested global keybinds on hyprland, so it varies for your wm / compositor
 - two modes: holding and clicking
 
 #### setting up!
-1. Head to [Releases](https://github.com/lunar1um/autoclicker.rs/releases) and grab the latest Release!
+1. Head to [Releases](https://github.com/lunar1um/lazyclicker.rs/releases) and grab the latest Release!
 2. Move the *binary file* (lazyclicker) to somewhere within your **PATH**
 3. Run `lazyclicker init` for the first time and it will create a sample configuration file (often at `~/.config/lazyclicker`)
 
