@@ -24,7 +24,7 @@ Example `profiles.toml`:
 ```toml
 [[profile]]
 name = "clicktest"
-interval = 1
+interval = 1000
 button = "Left"
 repeat = 1
 mode = "Click"
@@ -52,3 +52,52 @@ mode = "Hold"
 2. `lazyclicker list`: List all available profiles
 3. `lazyclicker start [PROFILE_NAME]`: Start / Run a profile
 4. `lazyclicker stop [PROFILE_NAME]`: Stop a running profile
+
+#### troubleshooting
+run `lazyclicker start [PROFILE_NAME] --run` and look for errors
+
+`Error: NotFound`:
+1. check if `/dev/uinput` exists: 
+
+```sh
+ls -l /dev/uinput
+```
+
+-> if it's missing: 
+```sh
+sudo modprobe uinput
+```
+
+-> make it permanent across reboots:
+```sh
+echo uinput | sudo tee /etc/modules-load.d/uinput.conf
+```
+
+2. fix perms
+
+```sh
+ls -l /dev/uinput
+```
+
+check the permissions of user, it should be something like `crw-rw-rw-`
+
+if not,  
+add user to the right group, or create a udev rule:
+
+```sh
+sudo groupadd input
+sudo usermod -aG input $USER
+```
+
+then create `/etc/udev/rules.d/99-input.rules`:
+
+```ini
+KERNEL=="uinput", MODE="0660", GROUP="input"
+```
+
+and reload rules:
+
+```sh
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
