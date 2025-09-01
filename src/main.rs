@@ -9,10 +9,15 @@ use std::{
 
 use clap::Parser;
 use commands::{Cli, Commands};
-use mouse_rs::{Mouse, types::keys::Keys};
-use profiles::{Config, Mode, MouseButton};
+use mouse::{MouseButton, MouseDevice};
+use nix::{
+    sys::signal::{Signal, kill},
+    unistd::Pid,
+};
+use profiles::{Config, Mode};
 
 mod commands;
+mod mouse;
 mod profiles;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -51,39 +56,34 @@ fn main() -> Result<(), Box<dyn Error>> {
         Commands::Start { name, __run } => {
             let config = Config::load()?;
 
-            if let Some(profile) = config.profile.iter().find(|e| e.name == name) {
+            if let Some(profile) = config.profile.iter().find(|e| e.name == name).cloned() {
                 if __run {
                     println!("Running profile: {}", profile.name);
 
-                    let mouse = Mouse::new();
-                    let button: Keys = match profile.button {
-                        MouseButton::Left => Keys::LEFT,
-                        MouseButton::Right => Keys::RIGHT,
-                    };
+                    let mut mouse = MouseDevice::new()?;
 
                     match profile.mode {
                         Mode::Click => loop {
                             for _ in 0..=profile.repeat.unwrap() {
-                                mouse.click(&button).expect("can't click");
+                                let _ = mouse.click(&profile.button);
                             }
 
-                            sleep(Duration::from_secs(profile.interval.unwrap()));
+                            sleep(Duration::from_millis(profile.interval.unwrap()));
                         },
                         Mode::Hold => {
                             ctrlc::set_handler(move || {
-                                let mouse = Mouse::new();
-                                mouse.release(&button).expect("can't release");
+                                match MouseDevice::new() {
+                                    Ok(mut mouse) => {
+                                        let _ = mouse.release(&profile.button);
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Failed to create MouseDevice: {}", e);
+                                    }
+                                }
                                 std::process::exit(0);
                             })?;
 
-                            let button: Keys = match profile.button {
-                                MouseButton::Left => Keys::LEFT,
-                                MouseButton::Right => Keys::RIGHT,
-                            };
-                            // `Keys`` doesn't implement `Copy` trait, and .clone() method
-                            // so this workaround should work for now.
-
-                            mouse.press(&button).expect("can't press");
+                            let _ = mouse.hold(&profile.button);
 
                             loop {
                                 sleep(Duration::from_secs(1)); // keep process alive
@@ -170,28 +170,13 @@ fn stop(profile: &str) -> Result<(), Box<dyn Error>> {
 
     let pid = fs::read_to_string(&pid_file)?.trim().parse::<u32>()?;
 
-    #[cfg(target_family = "unix")]
-    {
-        use nix::{
-            sys::signal::{Signal, kill},
-            unistd::Pid,
-        };
-
-        let result = kill(Pid::from_raw(pid as i32), Signal::SIGTERM);
-        match result {
-            Ok(_) => {}
-            Err(nix::Error::ESRCH) => {
-                println!("no running process found for: {}", profile);
-            }
-            Err(e) => return Err(Box::new(e)),
+    let result = kill(Pid::from_raw(pid as i32), Signal::SIGTERM);
+    match result {
+        Ok(_) => {}
+        Err(nix::Error::ESRCH) => {
+            println!("no running process found for: {}", profile);
         }
-    }
-
-    #[cfg(target_family = "windows")]
-    {
-        Command::new("taskkill")
-            .args(["/PID", &pid.to_string(), "/F"])
-            .status()?;
+        Err(e) => return Err(Box::new(e)),
     }
 
     fs::remove_file(pid_file)?;

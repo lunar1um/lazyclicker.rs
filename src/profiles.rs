@@ -3,7 +3,9 @@ use serde::Deserialize;
 use std::{error::Error, fs, path::PathBuf};
 use toml;
 
-#[derive(Debug, Deserialize)]
+use crate::mouse::MouseButton;
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Profile {
     pub name: String,
     pub interval: Option<u64>,
@@ -12,19 +14,13 @@ pub struct Profile {
     pub repeat: Option<i32>,
 }
 
-#[derive(Debug, Deserialize, PartialEq)]
-pub enum MouseButton {
-    Left,
-    Right,
-}
-
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, PartialEq, Clone)]
 pub enum Mode {
     Click,
     Hold,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     pub profile: Vec<Profile>,
 }

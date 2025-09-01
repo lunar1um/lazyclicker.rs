@@ -38,7 +38,7 @@ mode = "Hold"
 - `name`: the name of the profile
 - `mode`: clicking mode (can be either `Click` or `Hold`)
 - `button`: mouse button to click (can be either `Left` or `Right`)
-- `interval`: time between clicks (in seconds)
+- `interval`: time between clicks (in milliseconds)
 - `repeat`: numbers of repeat each click
 
 > [!NOTE]
